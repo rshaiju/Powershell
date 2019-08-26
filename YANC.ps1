@@ -42,7 +42,7 @@ foreach($package in $packages)
     
      #$count++
      #
-     #if($count -eq 1)
+     #if($count -eq 2)
      #{
      #   break
      #}
@@ -51,37 +51,23 @@ foreach($package in $packages)
 
 $result|Export-Csv "C:\Temp\depsnew.csv"
 
-$consolidatedPrjNames=$result|select -ExpandProperty applicableProjects -Unique
 
-foreach($prjName in $consolidatedPrjNames.Split(','))
+
+$consolidatedPrjNames=$result|select -ExpandProperty applicableProjects|% {$_.split(',')}|select -Unique
+$consolidatedPrjNames|out-file "c:\temp\projects.txt"
+
+foreach($prjName in $consolidatedPrjNames)
 {
         
-
-        #"Checking the applicable updates of $prjName"
-        #"-----------------------------------------"
-        #$consolidatedPackages=$result|? {$_.applicableProjects.Split(',').Contains($prjName)}
-        #foreach($pkg in $consolidatedPackages)
-        #{
-        #    "Consolidating Package $($pkg.Name) in $prjName"
-        #    
-        #    #$installedPackage=get-package $pkg.Name -ProjectName $prjName
-        #    #
-        #    #"Currently installed : $($installedPackage.Version.Version.ToString())"
-        #    #"Candidate : $( $pkg.CandidateVersion)"
-        #    
-        #    Update-Package $pkg.Name -ProjectName $prjName 
-        #}
-
-
         Try
         {
             Update-Package -ProjectName $prjName 
-            "Updated all packages in $prjName" | Out-File "C:\Temp\updatelog.txt"
+            "Updated all packages in $prjName" | Out-File "C:\Temp\updatelog.txt" -Append
         }
         Catch
         {
             $ErrorMessage = $_.Exception.Message
-            "Error updating packages in $prjName : $ErrorMessage" | Out-File "C:\Temp\updatelog.txt"
+            "Error updating packages in $prjName : $ErrorMessage" | Out-File "C:\Temp\updatelog.txt" -Append
         }
 }
 
